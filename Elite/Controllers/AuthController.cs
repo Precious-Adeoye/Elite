@@ -57,14 +57,14 @@ namespace Elite.Controllers
             return Ok(new { Message = "BVN set successfully." });
         }
 
-        [HttpGet("register")]
+        [HttpPost("register")]
         public IActionResult Register([FromBody] RegisterDto dto)
         {
             var users = _userServices.SetUserInfo(dto);
             return users ? Ok(users) : BadRequest("Failed to set Users");
         }
 
-        [HttpGet("pin")]
+        [HttpPost("pin")]
         public IActionResult SetPin([FromBody] CreatePinDto dto)
         {
             if (string.IsNullOrEmpty(dto.Pin))
@@ -79,7 +79,7 @@ namespace Elite.Controllers
             return Ok(new { Message = "Pin set successfully." });
         }
 
-        [HttpGet("confirm-pin")]
+        [HttpPost("confirm-pin")]
         public IActionResult ConfirmPin([FromBody] ConfirmPinDto dto)
         {
             if (string.IsNullOrEmpty(dto.ConfirmedPin))

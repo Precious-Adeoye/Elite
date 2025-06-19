@@ -1,4 +1,6 @@
 
+using Elite.Services;
+
 namespace Elite
 {
     public class Program
@@ -6,6 +8,9 @@ namespace Elite
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            //Dependency Injection
+            builder.Services.AddSingleton<UserServices>();
 
             // Add services to the container.
 
