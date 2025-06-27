@@ -20,6 +20,9 @@ namespace Elite.Controllers
         [HttpPost("request-otp")]
         public IActionResult RequestOtp([FromBody] RequestOtpDto dto)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrEmpty(dto.Email))
             {
                 return BadRequest("Email is required.");
