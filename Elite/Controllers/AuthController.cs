@@ -1,4 +1,5 @@
-﻿using Elite.DTOs;
+﻿using Elite.Application.DTOs;
+using Elite.DTOs;
 using Elite.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,9 @@ namespace Elite.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserServices _userServices;
+        private readonly UserService _userServices;
 
-        public AuthController(UserServices userServices)
+        public AuthController(UserService userServices)
         {
             _userServices = userServices;
         }
@@ -80,19 +81,28 @@ namespace Elite.Controllers
         }
 
         [HttpPost("confirm-pin")]
-        public IActionResult ConfirmPin([FromBody] ConfirmPinDto dto)
+        public async Task<IActionResult> ConfirmPin([FromBody] ConfirmPinDto dto)
         {
             if (string.IsNullOrEmpty(dto.ConfirmedPin))
             {
                 return BadRequest(" Pin are required.");
             }
-            var isConfirmed = _userServices.ConfirmPin(dto.Email, dto.ConfirmedPin);
+            var isConfirmed = await _userServices.ConfirmPinAync(dto.Email, dto.ConfirmedPin);
             if (!isConfirmed)
             {
                 return BadRequest("Pin could not be confirmed. Ensure OTP is verified.");
             }
             return Ok(new { Message = "Registration completed" });
         }
+
+        [HttpPost("Notification-preference")]
+        public async Task<IActionResult> UpdateNotification([FromBody] Application.DTOs.NotificationPreferenceDTO dto)
+        {
+            var updated = await _userServices.NotificationPreferenceAsync(dto.Email, dto.AllowNotifications);
+            return updated
+                ? Ok(new { Message = "Notification preference updated successfully." })
+                : BadRequest("Failed to update notification preference.");
+        } 
     }
 
 }

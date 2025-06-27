@@ -1,4 +1,6 @@
-﻿using Elite.Services;
+﻿using Elite.Application.DTOs;
+using Elite.Domain.Interface;
+using Elite.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +10,45 @@ namespace Elite.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-      
+      private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+
+        [HttpPost("Notification-preference")]
+        public async Task<IActionResult> UpdateNotification([FromBody] Application.DTOs.NotificationPreferenceDTO dto)
+        {
+            var updated = await _userService.NotificationPreferenceAsync(dto.Email, dto.AllowNotifications);
+            return updated
+                ? Ok(new { Message = "Notification preference updated successfully." })
+                : BadRequest("Failed to update notification preference.");
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            var user = await _userService.ValidateLoginAsync(dto.Email, dto.Password);
+            if(user == null)
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            return Ok(new
+            {
+                Message = "Login successful.",
+                User = new
+                {
+                    user.Email,
+                    user.FullName,
+                    user.PhoneNumber,
+                    user.Bvn,
+                    user.Country,
+                    user.IsNotificationAllowed
+                }
+            });
+        }
     }
 }
