@@ -29,7 +29,7 @@ namespace Elite.Application.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("FullNmae", user.FullName),
+                new Claim("FullName", user.FullName),
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

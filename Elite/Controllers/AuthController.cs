@@ -1,4 +1,5 @@
 ﻿using Elite.Application.DTOs;
+using Elite.Domain.Interface;
 using Elite.DTOs;
 using Elite.Services;
 using Microsoft.AspNetCore.Http;
@@ -10,11 +11,11 @@ namespace Elite.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserService _userServices;
+        private readonly IUserService _userServices;
 
-        public AuthController(UserService userServices)
+        public AuthController(IUserService userService)
         {
-            _userServices = userServices;
+            _userServices = userService;
         }
 
         [HttpPost("request-otp")]
@@ -49,9 +50,14 @@ namespace Elite.Controllers
         [HttpPost("bvn")]
         public IActionResult SetBvn([FromBody] BvnDto dto)
         {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (string.IsNullOrEmpty(dto.Bvn))
             {
-                return BadRequest(" BVN are required.");
+                return BadRequest(" BVN is required.");
             }
             var isSet = _userServices.SetBvn(dto.Email, dto.Bvn);
             if (!isSet)
@@ -98,14 +104,7 @@ namespace Elite.Controllers
             return Ok(new { Message = "Registration completed" });
         }
 
-        [HttpPost("Notification-preference")]
-        public async Task<IActionResult> UpdateNotification([FromBody] Application.DTOs.NotificationPreferenceDTO dto)
-        {
-            var updated = await _userServices.NotificationPreferenceAsync(dto.Email, dto.AllowNotifications);
-            return updated
-                ? Ok(new { Message = "Notification preference updated successfully." })
-                : BadRequest("Failed to update notification preference.");
-        } 
+      
     }
 
 }

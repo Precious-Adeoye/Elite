@@ -27,28 +27,6 @@ namespace Elite.Controllers
                 : BadRequest("Failed to update notification preference.");
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
-        {
-            var user = await _userService.ValidateLoginAsync(dto.Email, dto.Password);
-            if(user == null)
-            {
-                return Unauthorized("Invalid email or password.");
-            }
-
-            return Ok(new
-            {
-                Message = "Login successful.",
-                User = new
-                {
-                    user.Email,
-                    user.FullName,
-                    user.PhoneNumber,
-                    user.Bvn,
-                    user.Country,
-                    user.IsNotificationAllowed
-                }
-            });
-        }
+      
     }
 }

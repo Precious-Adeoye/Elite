@@ -11,7 +11,7 @@ namespace Elite.Domain.Interface
     public interface ITransactionService
     {
         Task AddMoneyAsync(Guid userId, decimal amount, string description);
-        Task SendMoneyAsync(Guid userId, string receiverAccountNumber ,decimal amount, string description);
+        Task SendMoneyAsync(Guid userId, string receiverAccountNumber ,decimal amount, string description, bool isExternal = false, string bankCode = null);
       
     }
 }

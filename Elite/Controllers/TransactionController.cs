@@ -32,11 +32,11 @@ namespace Elite.Presentation.Controllers
 
 
         [HttpPost("send-money")]
-        public async Task<IActionResult> SendMoney([FromBody] TransactionDto dto, string receiverAccountNumber)
+        public async Task<IActionResult> SendMoney([FromBody] TransferDto dto)
         {
             try
             {
-                await _Service.SendMoneyAsync(dto.UserId, receiverAccountNumber, dto.Amount, dto.Description);
+                await _Service.SendMoneyAsync(dto.senderId, dto.ReceiverAccountNumber, dto.Amount, dto.Description, dto.IsExternal, dto.BankCode);
                 return Ok(new { message = "Money sent successfully" });
             }
             catch (Exception ex)

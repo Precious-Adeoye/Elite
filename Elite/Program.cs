@@ -6,6 +6,11 @@ using Elite.Domain.Interface;
 using Elite.Application.Services;
 using Microsoft.AspNetCore.Identity;
 using Elite.Domain.Entities;
+using Elite.Infrastructure.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 
 namespace Elite
 {
@@ -22,6 +27,30 @@ namespace Elite
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+                //
+
+            var jwtSettings = builder.Configuration.GetSection("JWT"); 
+            builder.Services.Configure<JwtSettings>(jwtSettings);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
+
             // Add Identity services
             builder.Services.AddIdentity<User, IdentityRole<Guid>>()
                 .AddEntityFrameworkStores<AppDbContext>()
@@ -33,7 +62,7 @@ namespace Elite
             builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connection, ServerVersion.AutoDetect(connection)));
 
             //Service configuration
-            _ = builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITransactionService, TransactionServices>();
 
             var app = builder.Build();
@@ -47,6 +76,7 @@ namespace Elite
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

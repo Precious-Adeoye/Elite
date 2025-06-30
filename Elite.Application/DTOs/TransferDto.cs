@@ -12,5 +12,7 @@ namespace Elite.Application.DTOs
         public string ReceiverAccountNumber { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
+        public bool IsExternal {  get; set; }
+        public string BankCode { get; set; }
     }
 }

@@ -22,28 +22,43 @@ namespace Elite.Services
 
         public string RequestOtp(string email)
         {
-            var otp = new Random().Next(100000, 999999).ToString();
+            try
+            {
+                var otp = new Random().Next(100000, 999999).ToString();
 
-            var existing =_context.UserRegistrations.FirstOrDefault(u => u.Email == email);
-            if (existing != null)
-            {
-                existing.OtpCode = otp;
-                existing.OtpGeneratedAt = DateTime.UtcNow;
-                existing.IsOtpVerified = false;
-            }
-            else
-            {
-                _context.UserRegistrations.Add(new UserRegistration
+                var existing = _context.UserRegistrations.FirstOrDefault(u => u.Email == email);
+                if (existing != null)
                 {
-                    Email = email,
-                    OtpCode = otp,
-                    OtpGeneratedAt = DateTime.UtcNow,
-                    IsOtpVerified = false
-                });
+                    existing.OtpCode = otp;
+                    existing.OtpGeneratedAt = DateTime.UtcNow;
+                    existing.IsOtpVerified = false;
+                }
+                else
+                {
+                    _context.UserRegistrations.Add(new UserRegistration
+                    {
+                        Email = email,
+                        OtpCode = otp,
+                        OtpGeneratedAt = DateTime.UtcNow,
+                        IsOtpVerified = false
+                    });
+                }
+                _context.SaveChanges();
+                Console.WriteLine($"[OTP] sent to {email} : {otp}");
+                return otp;
+
+            }catch(Exception ex)
+            {
+                Console.WriteLine("An error occurred while generating OTP:");
+                Console.WriteLine(ex.Message);
+               
+                Console.WriteLine(ex.StackTrace);
+
+               
+                throw;
             }
 
-            Console.WriteLine($"[OTP] sent to {email} : {otp}");
-            return otp;
+
 
         }
 
@@ -61,8 +76,9 @@ namespace Elite.Services
                 Console.WriteLine($"[OTP] expired for {email}");
                 return false;
             }
-
+           
             user.IsOtpVerified = true;
+            _context.SaveChanges();
             return true;
         }
 
@@ -71,9 +87,16 @@ namespace Elite.Services
             var user = _context.UserRegistrations.FirstOrDefault(u => u.Email == email && u.IsOtpVerified);
             if (user == null || !user.IsOtpVerified)
             {
+                Console.WriteLine("User not found");
+                return false;
+            }
+           if (!user.IsOtpVerified)
+            {
+                Console.WriteLine("OTP not verified");
                 return false;
             }
             user.Bvn = bvn;
+            _context.SaveChanges();
             return true;
         }
 
@@ -88,8 +111,8 @@ namespace Elite.Services
             user.LastName = dto.LastName;
             user.PhoneNumber = dto.PhoneNumber;
             user.Password = dto.Password;
-            
-            
+
+            _context.SaveChanges();
             return true;
         }
 
@@ -100,7 +123,9 @@ namespace Elite.Services
             {
                 return false;
             }
+           
             user.Pin = pin;
+            _context.SaveChanges();
             return true;
         }
 
@@ -118,7 +143,7 @@ namespace Elite.Services
                 var user = new User
                 {
                     Email = session.Email,
-                    Username = session.Email,
+                    UserName = session.Email,
                     FullName = $"{session.FirstName} {session.LastName}",
                     PhoneNumber = session.PhoneNumber,
                     Bvn = session.Bvn,
@@ -130,7 +155,6 @@ namespace Elite.Services
                 if (result.Succeeded)
                 {
                     _context.UserRegistrations.Remove(session);
-                    await _context.SaveChangesAsync();
                     return true;
                 }
                 return false;
@@ -145,6 +169,7 @@ namespace Elite.Services
             if (user == null)   return null;
             
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, password);
+            _context.SaveChanges();
             return isPasswordValid ? user : null;
         }
 
@@ -157,6 +182,7 @@ namespace Elite.Services
             }
             user.IsNotificationAllowed = isAllowed;
             await _userManager.UpdateAsync(user);
+            _context.SaveChanges();
             return true;
         }
 

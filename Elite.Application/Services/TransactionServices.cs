@@ -40,32 +40,48 @@ namespace Elite.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SendMoneyAsync(Guid userId, string receiverAccountNumber, decimal amount, string description)
+        async Task ITransactionService.SendMoneyAsync(Guid senderId, string receiverAccountNumber, decimal amount, string description, bool isExternal, string bankCode)
         {
-           var sender = await _context.Users.FindAsync(userId);
-            var receiver = await _context.Users.FirstOrDefaultAsync(u => u.AccountNumber == receiverAccountNumber);
-
-            if (sender == null || receiver == null)
-            {
-                throw new Exception("Sender or receiver not found");
-            }
+            var sender = await _context.Users.FindAsync(senderId);
+            if (sender == null)
+                throw new Exception("Sender not found");
 
             if (sender.AccountBalance < amount)
             {
-                throw new Exception("Insufficient balance");
+                throw new Exception("Insufficient funds");
             }
+
+            if(isExternal)
+            {
+                sender.AccountBalance = amount;
+
+                _context.Transactions.Add(new Transaction
+                {
+                    UserId = senderId,
+                    TransactionType = "External Transfar",
+                    Amount = amount,
+                    Description = $"Transferred to {receiverAccountNumber} via {bankCode}. Details: {description}",
+                    Date = DateTime.UtcNow,
+                });
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            var receiver = await _context.Users.FirstOrDefaultAsync(u => u.AccountNumber == receiverAccountNumber);
+            if (receiver == null)
+                throw new Exception("Receiver not found");
+
             sender.AccountBalance -= amount;
             receiver.AccountBalance += amount;
 
             _context.Transactions.Add(new Transaction
             {
-                UserId = userId,
+                UserId = senderId,
                 TransactionType = "Transfer",
                 Amount = amount,
                 Description = $"Sent to {receiver.FullName} - {description}",
                 Date = DateTime.UtcNow,
             });
-
             _context.Transactions.Add(new Transaction
             {
                 UserId = receiver.Id,
@@ -74,7 +90,6 @@ namespace Elite.Application.Services
                 Description = $"Received from {sender.FullName} - {description}",
                 Date = DateTime.UtcNow,
             });
-
             await _context.SaveChangesAsync();
         }
     }
