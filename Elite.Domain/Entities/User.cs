@@ -28,5 +28,7 @@ namespace Elite.Domain.Entities
         public bool IsNotificationAllowed { get; set; }
 
         public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public ICollection<Beneficiary> Beneficiaries { get; set; } = new List<Beneficiary>();
+
     }
 }

@@ -46,6 +46,13 @@ namespace Elite.Infrastructure.Data
             builder.Entity<UserRegistration>()
                 .HasIndex(ur => ur.Email)
                 .IsUnique();
+
+            builder.Entity<Beneficiary>();
+            builder.Entity<Beneficiary>()
+                .HasOne(b => b.User)
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
 

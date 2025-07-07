@@ -40,7 +40,7 @@ namespace Elite.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        async Task ITransactionService.SendMoneyAsync(Guid senderId, string receiverAccountNumber, decimal amount, string description, bool isExternal, string bankCode)
+        public async Task SendMoneyAsync(Guid senderId, string receiverAccountNumber, decimal amount, string description, bool isExternal, string bankCode)
         {
             var sender = await _context.Users.FindAsync(senderId);
             if (sender == null)
